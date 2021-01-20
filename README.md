@@ -25,3 +25,10 @@ This project includes:
 2. R Markdown with all the code to clean and analyze the data titled co2_mm_mlo.txt
 3. the pdf produced using the R Markdown titled 'Modeling & Forecasting Atmospheric Carbon Concetration.pdf'
 
+## Results and Insights <a name="Results"></a>
+
+## Limitations and Further Questions <a name="Limitations"></a>
+**Limitations** 
+**Further Questions**
+
+## Licensing, Authors, Acknowledgements <a name="licensing"></a>
