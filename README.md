@@ -14,5 +14,4 @@ Carbon dioxide is a greenhouse gas, it causes heat to remain trapped within the 
 ## Installation
 To get started you will need a recent version of RStudio. Additionally, the packages used in the project can be downloaded running the following at the command line:
     
-        install.packages(c("dplyr", "kableExtra", "knitr", 
-                            "ggplot2", "stringr", "MASS", "caret"))
+        install.packages(c("astsa", "forecast", "TSPred"))
