@@ -15,3 +15,13 @@ Carbon dioxide is a greenhouse gas, it causes heat to remain trapped within the 
 To get started you will need a recent version of RStudio. Additionally, the packages used in the project can be downloaded running the following at the command line:
     
         install.packages(c("astsa", "forecast", "TSPred"))
+        
+## About the Data <a name="About"></a>
+The data set that I look at in this document has the CO2 monthly means measured at Mauna Loa, Hawaii. Throughout this project I try to understand the trend and seasonality of the data, and I use this information to fit a Seasonal Autoregressive Integrated Moving Average (SARIMA) model to the data. The model is then used to forecast atmospheric carbon concentration. 
+
+## File Description <a name="description"></a>
+This project includes:
+1. one csv file with all the necessary data
+2. R Markdown with all the code to clean and analyze the data titled co2_mm_mlo.txt
+3. the pdf produced using the R Markdown titled 'Modeling & Forecasting Atmospheric Carbon Concetration.pdf'
+
