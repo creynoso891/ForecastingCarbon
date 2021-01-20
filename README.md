@@ -1,4 +1,4 @@
-# ForecastingCarbon
+# Modeling & Forecasting Atmospheric Carbon Dioxide Concentration
 Forecasting carbon dioxide concentration in the atmosphere. 
 
 Carbon dioxide is a greenhouse gas, it causes heat to remain trapped within the atmosphere of Earth. It is a naturally occurring gas, but human activities, such as the combustion of fossil fuels, disrupt the natural carbon cycle. Due to its greenhouse effect and the magnitude with which humans produce it, carbon dioxide is a crucial component in understanding climate change.
