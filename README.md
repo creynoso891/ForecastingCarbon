@@ -34,6 +34,6 @@ The model used to forecast carbon dioxide concentration in the atmosphere was a 
 3. **Forecasting & Forecasting Accuracy** I tested the accuracy of the model by using forecasting. 
 - I used data from 1958 to 2018 train the model 
 - The forecasts were made for CO2 values from January 2019 to April 2020.
-- Forecasting Accuracy can be gauged by analyzing forecasting errors. These values are in the same scale of the data, and the CO2 ppm values range from 312.66 to  416.21 ppm. Error terms that are close to zero, either positive or negative, indicate that the forecasts are unbiased and accurate. The forecast errors for the SARIMA model I created, are printed below: **the errors are close to zero, indicating that my model is unbiased and accurately predicted the CO2 ppm values. **
+- Forecasting Accuracy can be gauged by analyzing forecasting errors. These values are in the same scale of the data, and the CO2 ppm values range from 312.66 to  416.21 ppm. Error terms that are close to zero, either positive or negative, indicate that the forecasts are unbiased and accurate. The forecast errors for the SARIMA model I created, are printed below: **the errors are close to zero, indicating that my model is unbiased and accurately predicted the CO2 ppm values.**
 
 ## Licensing, Authors, Acknowledgements <a name="licensing"></a>
