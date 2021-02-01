@@ -24,7 +24,7 @@ This project includes:
 1. **'co2_mm_mlo.txt'** CSV file with the CO2 monthly means data used for this project. 
 - Up to date carbon dioxide data can be obtain through the following link: [Mauna Loa CO2 monthly means data (CSV)](https://www.esrl.noaa.gov/gmd/webdata/ccgg/trends/co2/co2_mm_mlo.txt) 
 2. **'Modeling and Forecasting Atmospheric Carbon Concetration.Rmd'** R Markdown with the code to analyze, model, and vizualize CO2 monthly means data.
-3. **'Modeling & Forecasting Atmospheric Carbon Concetration.pdf'** PDF produced using the R Markdown above (for complete code please refer to the Rmarkdowm above) 
+3. **'Modeling & Forecasting Atmospheric Carbon Concetration.html'** HTML produced using the R Markdown above (for complete code please refer to the Rmarkdowm above) 
 
 ## Results and Insights <a name="Results"></a>
 
