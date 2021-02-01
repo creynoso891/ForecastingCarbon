@@ -21,10 +21,10 @@ The data set that I look at in this document has the CO2 monthly means measured 
 
 ## File Description <a name="description"></a>
 This project includes:
-1. one csv file with the data used for this project. Up to date carbon dioxide data can be obtain through the following link:
-[Mauna Loa CO2 monthly means data (CSV)](https://www.esrl.noaa.gov/gmd/webdata/ccgg/trends/co2/co2_mm_mlo.txt) 
-2. R Markdown with the code to analyze, model, and vizualize the data titled 'Modeling and Forecasting Atmospheric Carbon Concetration.Rmd'
-3. PDF produced using the R Markdown above titled 'Modeling & Forecasting Atmospheric Carbon Concetration.pdf'
+1. **'co2_mm_mlo.txt'** CSV file with the CO2 monthly means data used for this project. 
+- Up to date carbon dioxide data can be obtain through the following link: [Mauna Loa CO2 monthly means data (CSV)](https://www.esrl.noaa.gov/gmd/webdata/ccgg/trends/co2/co2_mm_mlo.txt) 
+2. **'Modeling and Forecasting Atmospheric Carbon Concetration.Rmd'** R Markdown with the code to analyze, model, and vizualize CO2 monthly means data.
+3. **'Modeling & Forecasting Atmospheric Carbon Concetration.pdf'** PDF produced using the R Markdown above (for complete code please refer to the Rmarkdowm above) 
 
 ## Results and Insights <a name="Results"></a>
 
