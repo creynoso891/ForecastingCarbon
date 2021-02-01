@@ -1,0 +1,230 @@
+---
+title: "Modeling & Forecasting Atmospheric Carbon Concetration"
+author: "Citlally Reynoso"
+date: "1/19/2021"
+output: html_document
+---
+
+## Overview
+Carbon dioxide is a greenhouse gas, it causes heat to remain trapped within the atmosphere of Earth. It is a naturally occurring gas, but human activities, such as the combustion of fossil fuels, disrupt the natural carbon cycle. Due to its greenhouse effect and the magnitude with which humans produce it, carbon dioxide is a crucial component in understanding climate change.  
+
+## About the Data 
+The data set has the carbon dioxide monthly means measured at Mauna Loa, Hawaii from 1958 to April 2020. Throughout this project I model and analyze the trend and seasonality of the CO2 monthly means throughout the years. I use this information to fit a Seasonal Autoregressive Integrated Moving Average (SARIMA) model to the data. I then forecasted CO2 levels using the SARIMA model to validate it and test its accuracy. Below is a short description of the columns in the data:
+
+column name  | description
+-------------|---------------------------------
+date         | Year when carbon dioxide (CO2) reading was taken
+season corr  | Month when the reading was taken
+decimal      | Specific date -in decimal format- when reading was taken 
+average      | Average CO2 parts per million (ppm) for the month (-99.99 means there is no data for that month)
+interpolated | Average CO2 ppm for the month. Data was interpolated,predicted using a model, for months where reading was not available
+trend        | Trends observed in the data
+days         | Number of days for which we have data for that month. Until mid-1974 this column has -1 observations because the data for these months came from another lab.
+
+## Vizualizing the Data
+```{r,echo = FALSE, message=FALSE}
+co2_mm <- read.table("~/Carbon Concentration/co2_mm_mlo.txt")
+colnames(co2_mm)<- c("date", "season corr", "decimal" , "average", "interpolated", "trend",  "days")
+#summary(co2_mm)
+
+#formatting the data as a time series:
+co_ts <- ts(co2_mm$interpolated, start = co2_mm[1,1], end = co2_mm[734,1], frequency = 12)
+
+#plotting the data:
+library(astsa)
+head(co2_mm);tsplot(co_ts, main="Carbon Dioxide Monthly Means", ylab = "CO2 ppm", xlab = "Year")
+```
+
+## Modeling
+
+#### Autocorrelation and Partial Autocorrelation
+```{r,   echo = FALSE }
+acf2_og <- acf2(co_ts, max.lag = 240, main = "ACF & PACF for the Carbon Dioxide Time Series")
+```
+  
+- The Autocorrelation Function (ACF) of the time series is significant until a lag of 20 years. The autocorrelation decayes slowly, which means that the time series is not stationary. 
+- The Partial Autocorrelation Function (PACF), on the other hand, seems to fall within the insignificant range before 2.5 lags. In order to explore this further, we can decompose the data into trend and seasonality.
+
+#### Decomposing the data into Trend and Seasonality
+```{r,echo = FALSE }
+co.decomp <- decompose(co_ts, type = "multiplicative")
+ plot(co.decomp)
+```
+
+When we deconstruct the time series into trend and seasonality, we are able to visualize the influence that each one has on the data. 
+
+1. **Observed:** This is a visualization of the CO2 monthly means as they exist.
+2. **Trend:** shows us there is a positive trend over time in the **carbon dioxide parts per million (CO2 ppm)** present in our atmosphere. As the years have gone by, there is a constant increase in the CO2 ppm.
+3. **Seasonal:** graph shows an oscillating pattern in the CO2 monthly means. This indicates that the CO2 ppm are following a seasonal pattern throughout the year. During certain months, CO2 is generally higher and during others it tends to be lower.
+4. **Random:** This is the variation in CO2 monthly means that is left over when trend and seasonality are accounted for. As you can see in the graph, when trend and seasonality are accounted for there is no discernible pattern left over in the data. This is what we call *white noise*.
+
+
+#### Fitting trend into the model
+```{r,   echo = FALSE }
+fit = lm(interpolated ~ decimal, data = co2_mm)
+s_fit <- summary(fit); s_fit
+plot(resid(fit), main = "Residuals for CO2 ppms", ylab = "CO2 ppm", xlab = "lags"); acf2_fit <-acf2(resid(fit), main = "Residual ACF & PACF")
+```
+  
+- The variable *decimal*, gives the exact date in decimal form for when the CO2 reading was taken. Including this variable in the model helps us account for the positive trend in the CO2 ppm. 
+- This predictor alone, gives us an **R-squared of `r round(s_fit$r.squared, 3)`.**
+- Residuals allow us to see what kind of variance we still have not captured:
+- **Residual Plot:** When looking at the residual plot, it is apparent that there is still a lot of variance unaccounted for. Specifically, there seems to be a quadratic term which is heavily influencing the data that we have not yet accounted for in this model. 
+- **ACF & PACF:** The ACF is still significant after a lot of lags, but now is moves up and down over the zero line. The PACF seems to have significance for more lags than before adding in the time factor.
+
+#### Differentiating the Data Once: 
+
+```{r, echo = FALSE}
+plot(diff(co2_mm$interpolated), type = "o", main = "Residuals after Differnciating CO2 Monthly Means Once", ylab = "CO2 ppm", xlab = "lags")
+co2diff <- acf2(diff(co2_mm$interpolated), main = "ACF & PACF after Differnciating CO2 Monthly Means Once")
+```
+ 
+ - When I differentiate the data once, the data loses it's trend and the mean becomes centered at zero. When I fit the SARIMA model to the data, differentiate the data once will likely be enough to make it stationary. 
+ - Seasonality is still visible in the plot. This tells us that both seasonality and trend are sources of variation in the data, and should both be include into our SARIMA model.
+
+#### Fitting Seasonality into the data
+```{r, echo=FALSE}
+fit2 <- lm(interpolated~ decimal +factor(`season corr`), data = co2_mm)
+s_fit2 <- summary(fit2); s_fit2
+plot(resid(fit2),main = "Residuals after Fitting Seasonality", ylab = "CO2 ppm", xlab = "lags" )
+acf2_fit2 <- acf2(resid(fit2), main = "ACF & PACF after Fitting Seasonality")
+anova(fit,fit2)
+```
+- *season corr* is the month in which the CO2 measurement was taken. The variable allows us to explore the role of seasonality plays in CO2 concentration. 
+- The months are in number format, and I converted them into factors so they would be analyzed as a categorical valiable. They do not really behave in the same way that the numerical scale does. January and December are the farthest in the numerical scale, but probably have more in common than perhaps June and January.
+- This model actually has a higher R squared than the one with just the date, coming in at a **`r round(s_fit2$r.squared, 3)`**. As you are able to see in the anova results above, the added predictor is actually very significant, and helps to capture a lot more information on the data.
+- The residuals still show the quadratic trend, so that will be the next thing I add to the model. 
+- The ACF no longer has the sinusoidal behavior, but it remains significant for many lags. However, the PACF falls within the significance boundaries within one lag.
+
+#### Fitting a Quadratic term into the Model
+```{r, echo = FALSE}
+fit3<- lm(interpolated~ decimal+I(decimal^2), data = co2_mm)
+s_fit3 <- summary(fit3)
+plot(resid(fit3), ylab = "CO2 ppm", xlab = "lags" , main = "Residuals after Fitting a Quadratic Term")
+acf2_fit3 <- acf2(resid(fit3), main = "ACF & PACF after Fitting a Quadratic Term")
+anova(fit2, fit3)
+```
+- We have finally come around to fitting a quadratic term into the model! I have chosen to add this predictor on its own before adding in seasonality in order to see how it behaves individually. Our R squared has again improved to a **`r round(s_fit3$r.squared,3)`**.  
+- The residuals are constantly distributed around the zero line and there seems to be no apparent trend. 
+- As expected, when we remove seasonality from the model, the ACF returned to the  sinusoidal behavior, and the PACF seems to lose significance at about 20 lags.
+
+#### Combining Trend, Seasonality, and the Quadratic Term into one Model
+```{r, echo = FALSE}
+fit4 <- lm(interpolated ~ decimal+I(decimal^2)+ factor(`season corr`), data = co2_mm)
+s_fit4 <- summary(fit4); s_fit4
+anova(fit3, fit4)
+plot(resid(fit4), ylab = "CO2 ppm", xlab = "lags", main = "Residuals after Fitting Trend, Seasonality, and the Quadratic Term")
+acf2_fit4 <- acf2(resid(fit4), main = "ACF & PACF after Fitting Trend, Seasonality, and the Quadratic Term")
+sarima_fit4 <- sarima(resid(fit4),2,0,0)
+```
+
+- Here we combine all the different elements that we have found to be significant into one model. The resulting model has an **R squared of 0.9992**, and all the predictors included in the model are significant. 
+- When we compare this model with our previous one, the ANOVA table shows that this is a significantly better model, as our p-value is < 2.2e-16.
+
+#### Components of a SARIMA Model
+
+component | Description
+----------|----------------------------------
+p         | number of autoregressive terms
+d         | number of nonseasonal differences needed for stationarity
+p         | number of moving average terms
+P         | number of seasonal autoregressive terms
+D         | number of seasonal differences
+Q         | number of seasonal moving averages
+m         | number of periods per season
+
+## Fitting a SARIMA Model to our Data
+```{r, echo = FALSE, message=FALSE}
+library(forecast)
+arima1 <- auto.arima(co_ts, trace = TRUE, test = "kpss")
+summary(arima1)
+```
+- I used the auto.arima() function in order to help me find the best SARIMA model for the data. This function uses either AIC, AICc or BIC value to find the best model, and the results that are returned are much like the ones that I expected from exploring the data. 
+- p & P: While investigating the data, I suspected that the number of autoregressive lags in the data was going to be two, and here we see that the small p = 1. When we look at the autoregressive lags associated to seasonality, this does in fact turn out to be equal to two. 
+- d & D: As shown during the exploration part of the analysis, one difference was enough to make the time series stationary. This is reflected by the model that R choses, as both d & D = 1.
+- q & Q: The moving averages chosen for this model were 2. This was expected based on the fact that every model that we tested on this data set returned ACF plots which remained significant for many lags.
+
+## Validating the Model
+```{r, echo = FALSE}
+plot.ts(arima1$fitted, ylab = "CO2 ppm", col = "red", main = "Predicted v Actual CO2 ppm Values") ; lines(co_ts, col = "blue")
+plot.ts(arima1$residuals, ylab = "residuals", main = "Residuals for the ARIMA Model")
+acf2_arima1 <- acf2(arima1$residuals, main = "Residual ACF & PACF")
+```
+
+- When we plot the predicted values against the actual data, the two are virtually indistinguishable which means that our model is a good fit for our data.
+- The residuals are centered around zero and have a constant variance so it seems like nothing other than white noise is left unaccounted for.
+- The ACF & PACF both fall within the significance limits!
+
+#### Ljung-Box test
+```{r, echo = FALSE}
+checkresiduals(arima1, lag=12)
+```
+- The Ljung-Box test tests whether the residuals of a model are actually white noise, or if there’s some kind of trend that we did not account for. If the remaining residuals are in fact white noise, then we know that the model that was selected is actually a good fit for the data The null hypothesis of the test is that the model properly fits the data, which means that if our resulting p-value is significant we do not have a good model. Fortunately, our **p-value = 0.3246** which means that our model passed the Ljung-Box  test and I can confidently use it to make a forecast.
+
+## Forecasting using Cross Validation
+
+#### Creating Training and Testing Data set:
+```{r, echo = FALSE}
+#create training data set
+co2_training <- window(co_ts, start = c(1958,1), end = c(2018,12))
+#create testing data set
+co2_test <- window(co_ts, start = c(2018,1) )
+#plot
+plot.ts(co2_training, main = "Training data", ylab = "CO2 ppm")
+```
+
+- Data omitted: The training data is composed of the monthly CO2 ppm means for the years 1958 to the end of 2017. Therefore, there is an omission of a little over a year.
+- Test data: The test data is from the beginning of 2019 through month 4 of 2020.
+
+#### Creating the SARIMA Model
+```{r, echo = FALSE}
+arima2 <- auto.arima(co2_training, trace = TRUE, test = "kpss")
+summary(arima2)
+```
+
+- Only the testing data was used to create the SARIMA model in order to use the remaining data as a way to cross validate our model through forecasting. The resulting model is an ARIMA(1,1,1)(2,1,2)12, which is the same one that resulted from the complete data set. 
+
+#### Validating the Forecasting Model
+
+```{r, echo = FALSE}
+plot.ts(arima2$residuals, ylab = "residuals", main = "Residuals for the Forecasting Model: ARIMA(1,1,1)(2,1,2)12")
+acf2_arima2 <- acf2(arima2$residuals, main = "Residual ACF & PACF")
+```
+
+- Just by looking at the remaining residuals from our forecasting model, we can see that the errors are white noise. The ACF and PACF fall within the significance limits; these two plots are strong indicators that the model will pass the Ljung-Box test.
+
+```{r, echo = FALSE}
+checkresiduals(arima2, h = 12)
+```
+- As expected, or **p-value = 0.4137** so we know that our model is a good fit for our data. I can confidently use the model to create some forecasts.
+
+## Forecasts
+```{r, echo = FALSE, message=FALSE}
+library(TSPred)
+arima2.forecast <- forecast(arima2, h = 16)
+plot(arima2.forecast, xlab = "year", ylab = "CO2 ppm")
+plotarimapred(co2_test, arima2, xlim = c(2016,2020), range.percent = 0.05)
+sarima_acc <- accuracy(arima2.forecast, co2_test); sarima_acc
+```
+- The blue line on the first plot shows the forecasts made by the model. Everything previous to that is part of the data used to train the model.
+- The second plot zooms in on the observations leading up to the forecast and the forecasts the model made. The lightly shaded blue area around the dark blue line demonstrates the 95% confidence interval. As you can see, the true observations for this time period fall within the confidence interval of the forecasting model, so it actually did a good job forecasting those values.
+
+
+## Results and Insights 
+The model used to forecast carbon dioxide concentration in the atmosphere was a Seasonal ARIMA(1,1,1)(2,1,2)12
+
+1. **Seasonality** is an important component to explaining the variation that is present in the CO2 ppm. This means that the CO2 ppm levels naturally fluctuate up and down during certain times of the year. 
+- CO2 levels are **significantly higher** during the months of **February - July** compared to the levels seen during January.
+- February has the highest average CO2 levels. 
+- CO2 levels are **significantly lower** during the months of **August - December** compared to the typical levels experienced during January. 
+- December has the lowest average CO2 levels.
+2. **Trend** is a crucial component to modeling and understanding the variation in the CO2 atmospheric concentration. As we have seen throughout the data visualization and the final SARIMA model, there is a positive trend in the level of CO2 present in our atmosphere. As the years have gone by there is a constant, predictable increase in the CO2 concentration. 
+3. **Forecasting & Forecasting Accuracy** I tested the accuracy of the model by using forecasting. 
+- I used data from 1958 to 2018 train the model 
+- The forecasts were made for CO2 values from January 2019 to April 2020.
+- Forecasting Accuracy can be gauged by analyzing forecasting errors. These values are in the same scale of the data, and the CO2 ppm values range from `r range(co2_mm$interpolated)[1]` to  `r range(co2_mm$interpolated)[2]`ppm. Error terms that are close to zero, either positive or negative, indicate that the forecasts are unbiased and accurate. The forecast errors for the SARIMA model I created, are printed below: **the errors are close to zero, indicating that my model is unbiased and accurately predicted the CO2 ppm values. **
+
+**Forecast errors for the SARIMA model**
+```{r, echo = FALSE}
+sarima_acc
+```
