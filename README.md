@@ -31,7 +31,11 @@ This project includes:
 The model used to forecast carbon dioxide concentration in the atmosphere was a Seasonal ARIMA(1,1,1)(2,1,2)12
 
 1. **Seasonality** is an important component to explaining the variation that is present in the CO2 ppm. This means that the CO2 ppm levels naturally fluctuate up and down during certain times of the year. 
-2. **Trend** is also a very crucial component to modeling and understanding the variation in the CO2 atmospheric concentration. As we have seen throughout the data visualization and the final SARIMA model, there is a positive trend in the level of CO2 present in our atmosphere. As the years have gone by there is a constant, predictable increase in the CO2 concentration. 
+- CO2 levels are **significantly higher** during the months of **February - July** compared to the levels seen during January.
+- February has the highest average CO2 levels. 
+- CO2 levels are **significantly lower** during the months of **August - December** compared to the typical levels experienced during January. 
+- December has the lowest average CO2 levels.
+2. **Trend** is a crucial component to modeling and understanding the variation in the CO2 atmospheric concentration. As we have seen throughout the data visualization and the final SARIMA model, there is a positive trend in the level of CO2 present in our atmosphere. As the years have gone by there is a constant, predictable increase in the CO2 concentration.
 3. **Forecasting & Forecasting Accuracy** I tested the accuracy of the model by using forecasting. 
 - I used data from 1958 to 2018 train the model 
 - The forecasts were made for CO2 values from January 2019 to April 2020.
